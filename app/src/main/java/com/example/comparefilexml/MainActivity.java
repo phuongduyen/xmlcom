@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -53,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     String fileName = "mytest" + ".txt";
     String fileCompare = "mytest2" + ".txt";
     String result = "result" + ".txt";
-
+    BootReciever myBroadcastReceiver;
     Button button;
 
     @Override
@@ -66,21 +67,59 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "onCreateView", e);
             throw e;
         }
+        Log.d(TAG, "onCreateView");
 
+        myBroadcastReceiver = new BootReciever();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        intentFilter.addAction(Intent.ACTION_REBOOT);
+        intentFilter.addAction(Intent.ACTION_USER_PRESENT);
+        intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+        intentFilter.addAction(Intent.ACTION_USER_FOREGROUND);
+        intentFilter.addAction(Intent.ACTION_USER_BACKGROUND);
+        intentFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+        intentFilter.addAction(Intent.ACTION_USER_INITIALIZE);
+        intentFilter.addAction(Intent.ACTION_USER_UNLOCKED);
+        intentFilter.addAction(Intent.CATEGORY_LAUNCHER);
+        registerReceiver(myBroadcastReceiver, intentFilter);
+
+        requestPermissions();
         button = findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myMethod();
+               // myMethod();
             }
         });
         if (!checkPermission()) {
             requestPermission();
         } else {
             //Log.d(TAG, " PERMISSION done");
-            myMethod();
+           // myMethod();
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy unregisterReceiver");
+        unregisterReceiver(myBroadcastReceiver);
+    }
+
+    private void requestPermissions() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            Log.d(TAG, "requestPermissions");
+//            if (!Settings.canDrawOverlays(this)) {
+//                Log.d(TAG, "requestPermissions Settings");
+//                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + this.getPackageName()));
+//                startActivityForResult(intent, 232);
+//            } else {
+//                //Permission Granted-System will work
+//            }
+//        }
+    }
+
+
 
     private boolean checkPermission() {
         if (SDK_INT >= Build.VERSION_CODES.R) {
@@ -113,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
             if (Environment.isExternalStorageManager()) {
                 // perform action when allow permission success
                 Log.d(TAG, " onActivityResult success");
-                myMethod();
+               // myMethod();
             } else {
                 Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT).show();
             }
